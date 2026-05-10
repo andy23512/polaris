@@ -78,16 +78,16 @@
         "staticFilePath": "dist/polaris/browser",
         "spa": true
       }
-    }
-  },
-  "deploy": {
-    "executor": "angular-cli-ghpages:deploy",
-    "options": {
-      "buildTarget": "polaris:build:production",
-      "baseHref": "/polaris/",
-      "name": "Tangent Chang",
-      "email": "andy23512@gmail.com",
-      "dir": "dist/polaris/browser"
+    },
+    "deploy": {
+      "executor": "angular-cli-ghpages:deploy",
+      "options": {
+        "buildTarget": "polaris:build:production",
+        "baseHref": "/polaris/",
+        "name": "Tangent Chang",
+        "email": "andy23512@gmail.com",
+        "dir": "dist/polaris/browser"
+      }
     }
   }
 }
