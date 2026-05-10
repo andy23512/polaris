@@ -2,15 +2,69 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  HostListener,
   input,
+  signal,
 } from '@angular/core';
 import {
-  KEYBOARD_LAYOUTS_FROM_KBDLAYOUT,
   KeyboardLayout,
   KeyboardLayoutKey,
   KeyCode,
   WSKCode,
 } from 'tangent-cc-lib';
+
+const WSK_CODE_SET = new Set<WSKCode>([
+  'Backquote',
+  'Backslash',
+  'BracketLeft',
+  'BracketRight',
+  'Comma',
+  'Digit0',
+  'Digit1',
+  'Digit2',
+  'Digit3',
+  'Digit4',
+  'Digit5',
+  'Digit6',
+  'Digit7',
+  'Digit8',
+  'Digit9',
+  'Equal',
+  'IntlBackslash',
+  'IntlRo',
+  'IntlYen',
+  'KeyA',
+  'KeyB',
+  'KeyC',
+  'KeyD',
+  'KeyE',
+  'KeyF',
+  'KeyG',
+  'KeyH',
+  'KeyI',
+  'KeyJ',
+  'KeyK',
+  'KeyL',
+  'KeyM',
+  'KeyN',
+  'KeyO',
+  'KeyP',
+  'KeyQ',
+  'KeyR',
+  'KeyS',
+  'KeyT',
+  'KeyU',
+  'KeyV',
+  'KeyW',
+  'KeyX',
+  'KeyY',
+  'KeyZ',
+  'Minus',
+  'Period',
+  'Quote',
+  'Semicolon',
+  'Slash',
+]);
 
 function generateKeyboard(keyboardLayout: KeyboardLayout) {
   const keySize = 10;
@@ -153,13 +207,52 @@ function generateKeyboard(keyboardLayout: KeyboardLayout) {
 export class KeyboardLayoutComponent {
   readonly withShift = input(false);
   readonly withAltGraph = input(false);
+  readonly keyboardLayout = signal<KeyboardLayout>({
+    id: 'temp',
+    name: 'Temp',
+    reference: '',
+    layout: {},
+  });
   keyboard = computed(() => {
-    const keyboardLayout = KEYBOARD_LAYOUTS_FROM_KBDLAYOUT.find(
-      (k) => k.id === 'united-states-international',
-    );
+    const keyboardLayout = this.keyboardLayout();
     if (!keyboardLayout) {
       return null;
     }
     return generateKeyboard(keyboardLayout);
   });
+  isAltGraphHeld = signal(false);
+  isShiftHeld = signal(false);
+
+  @HostListener('window:keydown', ['$event'])
+  handleKeyDown(event: KeyboardEvent) {
+    event.preventDefault();
+    if (event.key === 'AltGraph' || event.code === 'AltRight') {
+      this.isAltGraphHeld.set(true);
+    } else if (WSK_CODE_SET.has(event.code as WSKCode)) {
+      const isAltGraphHeld = this.isAltGraphHeld();
+      const isShiftHeld = event.shiftKey;
+      const key: keyof KeyboardLayoutKey = isAltGraphHeld
+        ? isShiftHeld
+          ? 'withShiftAltGraph'
+          : 'withAltGraph'
+        : isShiftHeld
+          ? 'withShift'
+          : 'unmodified';
+      console.log(isAltGraphHeld, key);
+      const layout = this.keyboardLayout();
+      layout.layout[event.code as WSKCode] = {
+        ...(layout.layout[event.code as WSKCode] ?? {}),
+        [key]: { type: 'text', value: event.key },
+      };
+      this.keyboardLayout.set({ ...layout });
+    }
+  }
+
+  @HostListener('window:keyup', ['$event'])
+  handleKeyUp(event: KeyboardEvent) {
+    event.preventDefault();
+    if (event.key === 'AltGraph' && event.code === 'AltRight') {
+      this.isAltGraphHeld.set(false);
+    }
+  }
 }
