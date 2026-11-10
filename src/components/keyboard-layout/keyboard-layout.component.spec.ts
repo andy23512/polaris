@@ -8,7 +8,7 @@ describe('KeyboardLayoutComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [KeyboardLayoutComponent],
+      imports: [KeyboardLayoutComponent],
     });
     fixture = TestBed.createComponent(KeyboardLayoutComponent);
     component = fixture.componentInstance;
